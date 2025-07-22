@@ -25,79 +25,6 @@ weave_data = {
     "Denim": {"stiffness": 0.8, "breathability": 0.5}
 }
 
-HOME_TEMPLATE = '''
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome - Fabric Comfort Analyzer</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <style>
-        body {
-            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
-            min-height: 100vh;
-        }
-        .main-card {
-            max-width: 600px;
-            margin: 60px auto;
-            border-radius: 20px;
-            box-shadow: 0 4px 32px #0002;
-            background: rgba(255,255,255,0.95);
-            animation: fadeIn 1.2s;
-        }
-        .header {
-            font-size: 2.3rem;
-            font-weight: bold;
-            color: #2c3e50;
-            text-align: center;
-            margin-bottom: 1.5rem;
-            text-decoration: underline;
-            letter-spacing: 1px;
-        }
-        .header .bi {
-            color: #5e72e4;
-            font-size: 2.5rem;
-            vertical-align: middle;
-            margin-right: 10px;
-        }
-        .footer {
-            color: #7f8c8d;
-            font-size: 0.9rem;
-            text-align: center;
-            margin-top: 2rem;
-        }
-        .btn-primary {
-            background: linear-gradient(90deg, #5e72e4 0%, #825ee4 100%);
-            border: none;
-            font-size: 1.2rem;
-            transition: box-shadow 0.2s;
-        }
-        .btn-primary:hover {
-            box-shadow: 0 2px 12px #5e72e455;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(40px); }
-            to { opacity: 1; transform: none; }
-        }
-    </style>
-</head>
-<body>
-    <div class="main-card bg-white p-5">
-        <div class="header"><i class="bi bi-patch-check"></i>Welcome to the Fabric Comfort Analyzer</div>
-        <p class="lead text-center mb-4">Easily analyze the comfort of various fabric types based on their properties.<br>Click below to get started!</p>
-        <div class="d-flex justify-content-center">
-            <a href="{{ url_for('analyzer') }}" class="btn btn-primary btn-lg fw-bold">
-                <i class="bi bi-arrow-right-circle me-2"></i>Go to Analyzer
-            </a>
-        </div>
-        <div class="footer">© 2024 Fabric Analyzer | v2.0</div>
-    </div>
-</body>
-</html>
-'''
-
 ANALYZER_TEMPLATE = '''
 <!DOCTYPE html>
 <html lang="en">
@@ -105,132 +32,217 @@ ANALYZER_TEMPLATE = '''
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fabric Comfort Analyzer</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+            background: #f7fafd;
             min-height: 100vh;
+            font-family: 'Montserrat', Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .main-card {
-            max-width: 800px;
-            margin: 40px auto;
-            border-radius: 20px;
-            box-shadow: 0 4px 32px #0002;
-            background: rgba(255,255,255,0.97);
-            animation: fadeIn 1.2s;
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 2px 16px #0001;
+            padding: 2.2rem 1.5rem 1.5rem 1.5rem;
+            max-width: 50%;
+            width: 100%;
         }
-        .header {
-            font-size: 2.3rem;
-            font-weight: bold;
-            color: #2c3e50;
+        .main-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2563eb;
+            margin-bottom: 1.2rem;
             text-align: center;
-            margin-bottom: 1.5rem;
-            text-decoration: underline;
-            letter-spacing: 1px;
         }
-        .header .bi {
-            color: #5e72e4;
-            font-size: 2.5rem;
-            vertical-align: middle;
-            margin-right: 10px;
+        .input-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.1rem;
+            margin-bottom: 1.5rem;
+        }
+        .input-label {
+            font-size: 1.02rem;
+            color: #2563eb;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            text-align: left;
+        }
+        .form-control {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .input-field, .input-select {
+            width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
+            padding: 0.7rem 1rem;
+            border-radius: 8px;
+            border: 1.5px solid #e0eafc;
+            font-size: 1.05rem;
+            background: #f7fafd;
+            transition: border 0.2s;
+        }
+        .input-field:focus, .input-select:focus {
+            border: 1.5px solid #2563eb;
+            outline: none;
+        }
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 0.5rem;
+        }
+        .analyze-btn {
+            background: #2563eb;
+            color: #fff;
+            font-size: 1.12rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            padding: 0.8rem 0;
+            margin-top: 0.5rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+        }
+        .analyze-btn:hover {
+            background: #1746a0;
+        }
+        .result-section {
+            margin-top: 2.2rem;
+            text-align: left;
+        }
+        .donut-charts-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin: 1.5rem 0 1.5rem 0;
+            flex-wrap: wrap;
+            gap: 1.2rem;
+            padding: 0 1rem 0 1rem
+        }
+        .donut-chart-container {
+            width: 110px;
+            text-align: center;
+        }
+        .donut-label {
+            font-size: 1.02rem;
+            font-weight: 600;
+            color: #2563eb;
+            margin-top: 0.5rem;
+        }
+        .donut-value {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #222;
+            margin-top: 0.2rem;
+        }
+        .result-details {
+            font-size: 0.98rem;
+            color: #555;
+            background: #f7fafd;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1.1rem;
+        }
+        .export-btn {
+            background: #2563eb;
+            color: #fff;
+            font-size: 1.02rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            padding: 0.7rem 1.5rem;
+            margin-top: 1.1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .export-btn:hover {
+            background: #1746a0;
         }
         .footer {
-            color: #7f8c8d;
-            font-size: 0.9rem;
+            color: #b2bec3;
+            font-size: 0.95rem;
             text-align: center;
-            margin-top: 2rem;
+            margin-top: 2.2rem;
         }
-        .progress { height: 6px; }
-        .result-box {
-            background: linear-gradient(120deg, #f8f9fa 60%, #e0eafc 100%);
-            border-radius: 12px;
-            padding: 1.2rem;
-            border: 1px solid #ddd;
-            margin-top: 1.2rem;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            box-shadow: 0 2px 8px #0001;
-            animation: fadeIn 1.2s;
-        }
-        .btn-primary {
-            background: linear-gradient(90deg, #5e72e4 0%, #825ee4 100%);
-            border: none;
-            font-size: 1.1rem;
-            transition: box-shadow 0.2s;
-        }
-        .btn-primary:hover {
-            box-shadow: 0 2px 12px #5e72e455;
-        }
-        .btn-outline-secondary {
-            border-radius: 50px;
-            font-weight: 500;
-            font-size: 1.05rem;
-        }
-        label.form-label {
-            color: #5e72e4;
-            font-weight: 600;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(40px); }
-            to { opacity: 1; transform: none; }
+        @media (max-width: 700px) {
+            .main-card { padding: 1rem; max-width: 100vw; }
+            .donut-charts-row { flex-direction: column; align-items: center; gap: 1.5rem; }
+            .donut-chart-container { width: 100%; }
         }
     </style>
 </head>
 <body>
-    <div class="main-card bg-white p-4">
-        <div class="header"><i class="bi bi-patch-check"></i>Fabric Comfort Analyzer</div>
-        <form id="comfortForm">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label for="gsm" class="form-label fw-bold">GSM (g/m²)</label>
-                    <input type="number" class="form-control" id="gsm" name="gsm" min="50" max="500" value="150" required placeholder="50-500">
-                </div>
-                <div class="col-md-4">
-                    <label for="fiberType" class="form-label fw-bold">Fiber Type</label>
-                    <select class="form-select" id="fiberType" name="fiberType" required>
-                        {% for fiber in fibers %}
-                        <option value="{{ fiber }}">{{ fiber }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label for="weaveType" class="form-label fw-bold">Weave Type</label>
-                    <select class="form-select" id="weaveType" name="weaveType" required>
-                        {% for weave in weaves %}
-                        <option value="{{ weave }}">{{ weave }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
+    <div class="main-card">
+        <div class="main-title">Fabric Comfort Analyzer</div>
+        <form id="comfortForm" class="input-form">
+            <div class="form-control">
+                <label for="gsm" class="input-label">GSM (g/m²)</label>
+                <input type="number" class="input-field" id="gsm" name="gsm" min="50" max="500" value="150" required placeholder="50-500">
             </div>
-            <div class="form-check mt-3">
-                <input class="form-check-input" type="checkbox" id="softeningFinish" name="softeningFinish">
-                <label class="form-check-label" for="softeningFinish">Softening Finish Applied</label>
+            <div class="form-control">
+                <label for="fiberType" class="input-label">Fiber Type</label>
+                <select class="input-select" id="fiberType" name="fiberType" required>
+                    {% for fiber in fibers %}
+                    <option value="{{ fiber }}">{{ fiber }}</option>
+                    {% endfor %}
+                </select>
             </div>
-            <button type="submit" class="btn btn-primary w-100 fw-bold mt-4">
-                <i class="bi bi-graph-up-arrow me-2"></i>Analyze Comfort
-            </button>
+            <div class="form-control">
+                <label for="weaveType" class="input-label">Weave Type</label>
+                <select class="input-select" id="weaveType" name="weaveType" required>
+                    {% for weave in weaves %}
+                    <option value="{{ weave }}">{{ weave }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="checkbox-row">
+                <input class="form-check-input" type="checkbox" id="softeningFinish" name="softeningFinish" style="accent-color:#2563eb;">
+                <label class="form-check-label" for="softeningFinish" style="color:#444;font-size:1.01rem;">Softening Finish</label>
+            </div>
+            <button type="submit" class="analyze-btn">Analyze</button>
         </form>
-        <div class="progress mt-3" id="progressBar" style="display:none;">
-            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+        <div id="resultSection" class="result-section" style="display:none;">
+            <div class="donut-charts-row">
+                <div class="donut-chart-container">
+                    <canvas id="donutPhysical"></canvas>
+                    <div class="donut-label">Physical</div>
+                    <div class="donut-value" id="valPhysical"></div>
+                </div>
+                <div class="donut-chart-container">
+                    <canvas id="donutSensory"></canvas>
+                    <div class="donut-label">Sensory</div>
+                    <div class="donut-value" id="valSensory"></div>
+                </div>
+                <div class="donut-chart-container">
+                    <canvas id="donutMechanical"></canvas>
+                    <div class="donut-label">Mechanical</div>
+                    <div class="donut-value" id="valMechanical"></div>
+                </div>
+                <div class="donut-chart-container">
+                    <canvas id="donutPsychological"></canvas>
+                    <div class="donut-label">Psychological</div>
+                    <div class="donut-value" id="valPsychological"></div>
+                </div>
+            </div>
+            <div id="resultDetails" class="result-details" style="display:none;"></div>
+            <button id="exportBtn" class="export-btn" style="display:none;">Download Report</button>
         </div>
-        <div id="result" class="result-box" style="display:none;"></div>
-        <div class="d-flex justify-content-between mt-3">
-            <a href="{{ url_for('home') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-house-door me-1"></i>Back to Home
-            </a>
-            <button id="exportBtn" class="btn btn-outline-secondary" style="display:none;">
-                <i class="bi bi-download me-1"></i>Export Results
-            </button>
-        </div>
-        <div class="footer">© 2024 Fabric Analyzer | v2.0</div>
+        <div class="footer">© 2024 Fabric Analyzer</div>
     </div>
     <script>
+    let donutCharts = {};
     let lastResultText = '';
     document.getElementById('comfortForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        document.getElementById('progressBar').style.display = 'block';
-        document.getElementById('result').style.display = 'none';
-        document.getElementById('exportBtn').style.display = 'none';
         const gsm = document.getElementById('gsm').value;
         const fiberType = document.getElementById('fiberType').value;
         const weaveType = document.getElementById('weaveType').value;
@@ -248,42 +260,63 @@ ANALYZER_TEMPLATE = '''
         .then(res => res.json())
         .then(data => {
             if (data.error) {
-                document.getElementById('result').innerHTML = `<span class="text-danger">${data.error}</span>`;
-                document.getElementById('result').style.display = 'block';
-                document.getElementById('progressBar').style.display = 'none';
+                alert(data.error);
                 return;
             }
-            let html = `<b>=== FABRIC COMFORT ANALYSIS ===</b><br><br>`;
-            html += `Fiber Type: <b>${data.fiber_type}</b> | Weave: <b>${data.weave_type}</b> | GSM: <b>${data.gsm}</b><br>`;
-            html += `Softening Finish: <b>${data.softening_finish ? 'Yes' : 'No'}</b><br><br>`;
-            html += `<b>Comfort Score:</b> <span class='text-primary fw-bold'>${data.comfort_score.toFixed(2)}/100</span><br>`;
-            html += `<b>Category Breakdown:</b><br>`;
-            html += `<ul>`;
-            for (const [cat, score] of Object.entries(data.category_breakdown)) {
-                html += `<li><b>${cat}:</b> ${score.toFixed(1)}%</li>`;
-            }
-            html += `</ul>`;
-            html += `<b>Detailed Analysis:</b><br><pre style='font-size:1em;'>${data.detailed_analysis}</pre>`;
-            html += `<b>Suggestions to Improve Comfort:</b><br>`;
+            document.getElementById('resultSection').style.display = 'block';
+            // Donut charts for each category
+            const breakdown = data.category_breakdown;
+            const chartData = [
+                { id: 'donutPhysical', val: breakdown.Physical, color: '#2563eb', label: 'Physical', valId: 'valPhysical' },
+                { id: 'donutSensory', val: breakdown.Sensory, color: '#38a1f9', label: 'Sensory', valId: 'valSensory' },
+                { id: 'donutMechanical', val: breakdown.Mechanical, color: '#fda085', label: 'Mechanical', valId: 'valMechanical' },
+                { id: 'donutPsychological', val: breakdown.Psychological, color: '#b388ff', label: 'Psychological', valId: 'valPsychological' }
+            ];
+            chartData.forEach(cd => {
+                if (donutCharts[cd.id]) donutCharts[cd.id].destroy();
+                const ctx = document.getElementById(cd.id).getContext('2d');
+                donutCharts[cd.id] = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: [cd.label, ''],
+                        datasets: [{
+                            data: [cd.val, 100-cd.val],
+                            backgroundColor: [cd.color, '#e0eafc'],
+                            borderWidth: 2,
+                            borderColor: '#fff',
+                        }]
+                    },
+                    options: {
+                        cutout: '70%',
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { enabled: false }
+                        }
+                    }
+                });
+                document.getElementById(cd.valId).textContent = cd.val.toFixed(1) + '%';
+            });
+            // Details
+            let details = `<b>Fiber:</b> ${data.fiber_type} | <b>Weave:</b> ${data.weave_type} | <b>GSM:</b> ${data.gsm}<br>`;
+            details += `<b>Softening Finish:</b> ${data.softening_finish ? 'Yes' : 'No'}<br><br>`;
+            details += `<b>Analysis:</b><br><pre style='font-size:1em;'>${data.detailed_analysis}</pre>`;
+            details += `<b>Suggestions:</b><br>`;
             if (data.suggestions.length > 0) {
-                html += `<ol>`;
+                details += `<ol style='margin:0 0 0 1.2em;'>`;
                 for (const s of data.suggestions) {
-                    html += `<li>${s}</li>`;
+                    details += `<li>${s}</li>`;
                 }
-                html += `</ol>`;
+                details += `</ol>`;
             } else {
-                html += `<span>- Fabric properties are well-balanced for comfort</span>`;
+                details += `<span>- Fabric properties are well-balanced for comfort</span>`;
             }
-            lastResultText = html.replace(/<[^>]+>/g, '');
-            document.getElementById('result').innerHTML = html;
-            document.getElementById('result').style.display = 'block';
-            document.getElementById('progressBar').style.display = 'none';
+            lastResultText = details.replace(/<[^>]+>/g, '');
+            document.getElementById('resultDetails').innerHTML = details;
+            document.getElementById('resultDetails').style.display = 'block';
             document.getElementById('exportBtn').style.display = 'inline-block';
         })
         .catch(err => {
-            document.getElementById('result').innerHTML = '<span class="text-danger">Error during analysis.</span>';
-            document.getElementById('result').style.display = 'block';
-            document.getElementById('progressBar').style.display = 'none';
+            alert('Error during analysis.');
         });
     });
     document.getElementById('exportBtn').addEventListener('click', function() {
@@ -401,10 +434,6 @@ def analyze_comfort(gsm, fiber_type, weave_type, softening_finish):
     }
 
 @app.route('/')
-def home():
-    return render_template_string(HOME_TEMPLATE)
-
-@app.route('/analyzer', methods=['GET'])
 def analyzer():
     fibers = list(fiber_data.keys())
     weaves = list(weave_data.keys())
