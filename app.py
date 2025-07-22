@@ -34,6 +34,7 @@ ANALYZER_TEMPLATE = '''
     <title>Fabric Comfort Analyzer</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         body {
             background: #f7fafd;
@@ -173,6 +174,48 @@ ANALYZER_TEMPLATE = '''
             text-align: center;
             margin-top: 2.2rem;
         }
+        #pdfResult {
+            width: 100%;
+            max-width: 700px;
+            min-width: 0;
+            margin: 0 auto;
+            padding: 1.5rem 1rem;
+            background: #fff;
+            border-radius: 12px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .pdf-header {
+            text-align: center;
+            margin-bottom: 1.2rem;
+        }
+        .pdf-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #2563eb;
+            margin-bottom: 0.3rem;
+        }
+        .pdf-input-summary {
+            font-size: 1.05rem;
+            color: #444;
+            margin-bottom: 1.1rem;
+        }
+        .donut-charts-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 1.5rem;
+            width: 100%;
+        }
+        .donut-chart-container {
+            min-width: 120px;
+            flex: 1 1 120px;
+            text-align: center;
+            max-width: 160px;
+        }
         @media (max-width: 700px) {
             .main-card { padding: 1rem; max-width: 100vw; }
             .donut-charts-row { flex-direction: column; align-items: center; gap: 1.5rem; }
@@ -211,29 +254,35 @@ ANALYZER_TEMPLATE = '''
             <button type="submit" class="analyze-btn">Analyze</button>
         </form>
         <div id="resultSection" class="result-section" style="display:none;">
-            <div class="donut-charts-row">
-                <div class="donut-chart-container">
-                    <canvas id="donutPhysical"></canvas>
-                    <div class="donut-label">Physical</div>
-                    <div class="donut-value" id="valPhysical"></div>
+            <div id="pdfResult">
+                <div class="pdf-header">
+                    <div class="pdf-title">Fabric Comfort Analyzer Report</div>
+                    <div class="pdf-input-summary" id="pdfInputSummary"></div>
                 </div>
-                <div class="donut-chart-container">
-                    <canvas id="donutSensory"></canvas>
-                    <div class="donut-label">Sensory</div>
-                    <div class="donut-value" id="valSensory"></div>
+                <div class="donut-charts-row">
+                    <div class="donut-chart-container">
+                        <canvas id="donutPhysical"></canvas>
+                        <div class="donut-label">Physical</div>
+                        <div class="donut-value" id="valPhysical"></div>
+                    </div>
+                    <div class="donut-chart-container">
+                        <canvas id="donutSensory"></canvas>
+                        <div class="donut-label">Sensory</div>
+                        <div class="donut-value" id="valSensory"></div>
+                    </div>
+                    <div class="donut-chart-container">
+                        <canvas id="donutMechanical"></canvas>
+                        <div class="donut-label">Mechanical</div>
+                        <div class="donut-value" id="valMechanical"></div>
+                    </div>
+                    <div class="donut-chart-container">
+                        <canvas id="donutPsychological"></canvas>
+                        <div class="donut-label">Psychological</div>
+                        <div class="donut-value" id="valPsychological"></div>
+                    </div>
                 </div>
-                <div class="donut-chart-container">
-                    <canvas id="donutMechanical"></canvas>
-                    <div class="donut-label">Mechanical</div>
-                    <div class="donut-value" id="valMechanical"></div>
-                </div>
-                <div class="donut-chart-container">
-                    <canvas id="donutPsychological"></canvas>
-                    <div class="donut-label">Psychological</div>
-                    <div class="donut-value" id="valPsychological"></div>
-                </div>
+                <div id="resultDetails" class="result-details" style="display:none;"></div>
             </div>
-            <div id="resultDetails" class="result-details" style="display:none;"></div>
             <button id="exportBtn" class="export-btn" style="display:none;">Download Report</button>
         </div>
         <div class="footer">© 2024 Fabric Analyzer</div>
@@ -247,6 +296,9 @@ ANALYZER_TEMPLATE = '''
         const fiberType = document.getElementById('fiberType').value;
         const weaveType = document.getElementById('weaveType').value;
         const softeningFinish = document.getElementById('softeningFinish').checked;
+        // Set PDF input summary
+        document.getElementById('pdfInputSummary').innerHTML =
+            `<b>GSM:</b> ${gsm} &nbsp; | &nbsp; <b>Fiber Type:</b> ${fiberType} &nbsp; | &nbsp; <b>Weave Type:</b> ${weaveType} &nbsp; | &nbsp; <b>Softening Finish:</b> ${softeningFinish ? 'Yes' : 'No'}`;
         fetch('/analyze', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -320,15 +372,15 @@ ANALYZER_TEMPLATE = '''
         });
     });
     document.getElementById('exportBtn').addEventListener('click', function() {
-        const blob = new Blob([lastResultText], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'fabric_analysis_report.txt';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        const element = document.getElementById('pdfResult');
+        const opt = {
+            margin: 0,
+            filename: 'fabric_analysis_report.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        html2pdf().set(opt).from(element).save();
     });
     </script>
 </body>
